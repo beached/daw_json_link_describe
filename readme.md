@@ -4,7 +4,8 @@ See tests/src folder for a working example
 
 Requires C++20
 
-To describe a struct, only public members are supported, see the Boost.Describe documentation.  It will be similar to ```
+To describe a struct, only public members are supported, see the Boost.Describe documentation.  It will be similar to 
+```cpp
 struct X {
   int m1;
   int m2;
