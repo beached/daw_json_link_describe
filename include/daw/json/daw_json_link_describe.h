@@ -23,34 +23,19 @@ namespace daw::json {
 	inline constexpr bool use_boost_describe_v = false;
 
 	namespace describe_impl {
-		template<std::size_t N>
-		struct static_string {
-			char const value[N];
+		template<typename, typename>
+		struct describe_member_impl;
 
-			template<std::size_t... Is>
-			DAW_CONSTEVAL static_string( char const *str, std::index_sequence<Is...> )
-			  : value{ str[Is]... } {}
-			DAW_CONSTEVAL static_string( char const *str )
-			  : static_string( str, std::make_index_sequence<N>{ } ) {}
+		template<typename T, std::size_t... Is>
+		struct describe_member_impl<T, std::index_sequence<Is...>> {
+			static constexpr char const name[sizeof...( Is )]{ T::name[Is]... };
+			using type = json_link<name, traits::member_type_of_t<DAW_TYPEOF( T::pointer )>>;
 		};
 
-		template<template<typename...> typename List, typename... Ts>
-		inline auto get_member_list( List<Ts...> const &lst ) {
-			// This is needed because NTTP/CNTTP's cannot be literals.  Need to copy them to an array
-			static constexpr auto names =
-			  std::tuple{ static_string<std::char_traits<char>::length( Ts::name ) + 1>( Ts::name )... };
-			return [&]<std::size_t... Is>( std::index_sequence<Is...> ) {
-				return json_member_list<
-				  json_link<std::get<Is>( names ).value,
-				            traits::member_type_of_t<DAW_TYPEOF( Ts::pointer )>>...>{ };
-			}
-			( std::make_index_sequence<sizeof...( Ts )>{ } );
-		}
-
-		template<typename T, template<typename...> typename List, typename... Ts>
-		constexpr auto make_member_tuple( T const &value, List<Ts...> const & ) {
-			return std::forward_as_tuple( value.*Ts::pointer... );
-		}
+		template<typename T>
+		using describe_member =
+		  describe_member_impl<T,
+		                       std::make_index_sequence<std::char_traits<char>::length( T::name ) + 1>>;
 	} // namespace describe_impl
 
 	template<typename T>
@@ -66,12 +51,22 @@ namespace daw::json {
 		  boost::mp11::mp_empty<pro_desc_t>::value,
 		  "Classes with protected member variables are not supported. Do a manual mapping." );
 
+		template<typename U>
+		using desc_t = typename describe_impl::describe_member<U>::type;
+
+		template<template<typename...> typename List, typename... Ts>
+		static auto generate_member_list( List<Ts...> const & ) -> json_member_list<desc_t<Ts>...>;
+
+		template<template<typename...> typename List, typename... Ts>
+		static constexpr auto make_member_tuple( T const &value, List<Ts...> const & ) {
+			return std::forward_as_tuple( value.*Ts::pointer... );
+		}
+
 	public:
-		using type = DAW_TYPEOF( describe_impl::get_member_list( std::declval<pub_desc_t>( ) ) );
+		using type = DAW_TYPEOF( generate_member_list( pub_desc_t{ } ) );
 
 		static constexpr auto to_json_data( T const &value ) {
-			return describe_impl::make_member_tuple( value, pub_desc_t{ } );
+			return make_member_tuple( value, pub_desc_t{ } );
 		}
 	};
-
 } // namespace daw::json

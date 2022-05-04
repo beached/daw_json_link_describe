@@ -15,7 +15,7 @@ project("daw-json-link-describe"
         LANGUAGES C CXX
         )
 
-set(CMAKE_CXX_STANDARD 20 CACHE STRING "The C++ standard whose features are requested.")
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "The C++ standard whose features are requested.")
 
 option(DAW_USE_PACKAGE_MANAGEMENT "Do not use FetchContent and assume dependencies are installed" OFF)
 if (NOT DAW_USE_PACKAGE_MANAGEMENT)
@@ -40,7 +40,7 @@ add_library(${PROJECT_NAME} INTERFACE)
 add_library(daw::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} INTERFACE Boost::boost daw::daw-json-link ${COMPILER_SPECIFIC_LIBS})
 
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 target_include_directories(${PROJECT_NAME}
         INTERFACE
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"

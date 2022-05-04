@@ -16,7 +16,7 @@ struct X {
 	int m1;
 	int m2;
 };
-BOOST_DESCRIBE_STRUCT( X, ( ), ( m1, m2 ) )
+BOOST_DESCRIBE_STRUCT( X, ( ), ( m1, m2 ) );
 template<>
 inline constexpr bool daw::json::use_boost_describe_v<X> = true;
 

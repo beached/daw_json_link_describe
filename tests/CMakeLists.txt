@@ -7,7 +7,7 @@
 #
 
 add_library(daw_json_link_describe_test_lib INTERFACE)
-target_link_libraries(daw_json_link_describe_test_lib INTERFACE daw::daw-json-link-describe ${COMPILER_SPECIFIC_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(daw_json_link_describe_test_lib INTERFACE daw::daw-json-link-describe )
 target_compile_options(daw_json_link_describe_test_lib INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->)
 
 add_executable(daw_json_link_describe_bin src/daw_json_link_describe_test.cpp)
