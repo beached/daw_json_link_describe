@@ -36,6 +36,7 @@ namespace daw::json {
 
 		template<template<typename...> typename List, typename... Ts>
 		inline auto get_member_list( List<Ts...> const &lst ) {
+			// This is needed because NTTP/CNTTP's cannot be literals.  Need to copy them to an array
 			static constexpr auto names =
 			  std::tuple{ static_string<std::char_traits<char>::length( Ts::name ) + 1>( Ts::name )... };
 			return [&]<std::size_t... Is>( std::index_sequence<Is...> ) {
