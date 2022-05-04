@@ -18,15 +18,34 @@ struct X {
 };
 BOOST_DESCRIBE_STRUCT( X, ( ), ( m1, m2 ) );
 
+struct Y {
+	X m0;
+	std::string m1;
+};
+BOOST_DESCRIBE_STRUCT( Y, ( ), ( m0, m1 ) );
+
 int main( ) {
-	constexpr daw::string_view json_doc = R"json(
+	constexpr daw::string_view json_doc0 = R"json(
 {
 	"m1": 55,
 	"m2": 123
 }
 )json";
-	constexpr auto val = daw::json::from_json<X>( json_doc );
-	assert( val.m1 == 55 );
-	assert( val.m2 == 123 );
-	std::cout << "json: " << daw::json::to_json( val ) << '\n';
+	constexpr auto val0 = daw::json::from_json<X>( json_doc0 );
+	assert( val0.m1 == 55 );
+	assert( val0.m2 == 123 );
+	std::cout << "json: " << daw::json::to_json( val0 ) << '\n';
+
+	constexpr daw::string_view json_doc1 = R"json(
+{
+	"m0": { "m1": 55, "m2": 123 },
+	"m1": "Hello World!"
+}
+)json";
+
+	auto const val1 = daw::json::from_json<Y>( json_doc1 );
+	assert( val1.m0.m1 == 55 );
+	assert( val1.m0.m2 == 123 );
+	assert( val1.m1 == "Hello World!" );
+	std::cout << "json: " << daw::json::to_json( val1 ) << '\n';
 }
