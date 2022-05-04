@@ -14,7 +14,9 @@
 
 #include <boost/describe.hpp>
 #include <boost/mp11.hpp>
+#include <cstddef>
 #include <tuple>
+#include <utility>
 
 namespace daw::json {
 	/// Types that use Boost.Describe need to specialize use_boost_describe_v for their type with a
@@ -40,19 +42,22 @@ namespace daw::json {
 		  describe_member_impl<T,
 		                       std::make_index_sequence<std::char_traits<char>::length( T::name ) + 1>>;
 
-		template<typename T>
-		using detect_boost_public_member_descriptor_fn =
-		  decltype( boost_public_member_descriptor_fn( std::declval<T **>( ) ) );
+		template<typename>
+		struct member_list;
 
-		template<typename T>
-		inline constexpr bool has_boost_describe_description_v =
-		  daw::is_detected_v<detect_boost_public_member_descriptor_fn, T>;
+		template<template<typename...> typename List, typename... Ts>
+		struct member_list<List<Ts...>> {
+			template<typename U>
+			using desc_t = typename describe_member<U>::type;
+
+			using type = json_member_list<desc_t<Ts>...>;
+		};
 	} // namespace describe_impl
 
 	template<typename T>
-	struct json_data_contract<T,
-	                          std::enable_if_t<describe_impl::has_boost_describe_description_v<T> and
-	                                           use_boost_describe_v<T>>> {
+	struct json_data_contract<
+	  T,
+	  std::enable_if_t<boost::describe::has_describe_members<T>::value and use_boost_describe_v<T>>> {
 	private:
 		using pub_desc_t = boost::describe::describe_members<T, boost::describe::mod_public>;
 		using pri_desc_t = boost::describe::describe_members<T, boost::describe::mod_private>;
@@ -68,18 +73,15 @@ namespace daw::json {
 		using desc_t = typename describe_impl::describe_member<U>::type;
 
 		template<template<typename...> typename List, typename... Ts>
-		static auto generate_member_list( List<Ts...> const & ) -> json_member_list<desc_t<Ts>...>;
-
-		template<template<typename...> typename List, typename... Ts>
-		static constexpr auto make_member_tuple( T const &value, List<Ts...> const & ) {
+		static constexpr auto to_json_data_impl( T const &value, List<Ts...> const & ) noexcept {
 			return std::forward_as_tuple( value.*Ts::pointer... );
 		}
 
 	public:
-		using type = DAW_TYPEOF( generate_member_list( pub_desc_t{ } ) );
+		using type = typename describe_impl::member_list<pub_desc_t>::type;
 
-		static constexpr auto to_json_data( T const &value ) {
-			return make_member_tuple( value, pub_desc_t{ } );
+		static constexpr auto to_json_data( T const &value ) noexcept {
+			return to_json_data_impl( value, pub_desc_t{ } );
 		}
 	};
 } // namespace daw::json
