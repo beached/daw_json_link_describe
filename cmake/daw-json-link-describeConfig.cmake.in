@@ -1,0 +1,8 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency( daw-json-link )
+
+include("${CMAKE_CURRENT_LIST_DIR}/daw-json-link-hanaTargets.cmake")
+
+check_required_components( daw-json-link-hana )
