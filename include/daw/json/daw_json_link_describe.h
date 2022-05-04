@@ -23,29 +23,27 @@ namespace daw::json {
 	inline constexpr bool use_boost_describe_v = false;
 
 	namespace describe_impl {
-
 		template<std::size_t N>
 		struct static_string {
-			char const value[N + 1];
+			char const value[N];
 
 			template<std::size_t... Is>
-			constexpr static_string( char const *str, std::index_sequence<Is...> )
-			  : value{ str[Is]..., '\0' } {}
-			constexpr static_string( char const *str )
+			DAW_CONSTEVAL static_string( char const *str, std::index_sequence<Is...> )
+			  : value{ str[Is]... } {}
+			DAW_CONSTEVAL static_string( char const *str )
 			  : static_string( str, std::make_index_sequence<N>{ } ) {}
 		};
 
-		template<template<typename...> typename List, typename... Ts, std::size_t... Is>
-		auto get_member_list( List<Ts...> const &, std::index_sequence<Is...> ) {
-			static constexpr auto names =
-			  std::tuple{ static_string<std::char_traits<char>::length( Ts::name )>( Ts::name )... };
-			return json_member_list<json_link<std::get<Is>( names ).value,
-			                                  traits::member_type_of_t<DAW_TYPEOF( Ts::pointer )>>...>{ };
-		}
-
 		template<template<typename...> typename List, typename... Ts>
-		auto get_member_list( List<Ts...> const &lst ) {
-			return get_member_list( lst, std::make_index_sequence<sizeof...( Ts )>{ } );
+		inline auto get_member_list( List<Ts...> const &lst ) {
+			static constexpr auto names =
+			  std::tuple{ static_string<std::char_traits<char>::length( Ts::name ) + 1>( Ts::name )... };
+			return [&]<std::size_t... Is>( std::index_sequence<Is...> ) {
+				return json_member_list<
+				  json_link<std::get<Is>( names ).value,
+				            traits::member_type_of_t<DAW_TYPEOF( Ts::pointer )>>...>{ };
+			}
+			( std::make_index_sequence<sizeof...( Ts )>{ } );
 		}
 
 		template<typename T, template<typename...> typename List, typename... Ts>

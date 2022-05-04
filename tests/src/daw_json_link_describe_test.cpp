@@ -21,13 +21,13 @@ template<>
 inline constexpr bool daw::json::use_boost_describe_v<X> = true;
 
 int main( ) {
-	daw::string_view json_doc = R"json(
+	constexpr daw::string_view json_doc = R"json(
 {
 	"m1": 55,
 	"m2": 123
 }
 )json";
-	auto val = daw::json::from_json<X>( json_doc );
+	constexpr auto val = daw::json::from_json<X>( json_doc );
 	assert( val.m1 == 55 );
 	assert( val.m2 == 123 );
 	std::cout << "json: " << daw::json::to_json( val ) << '\n';
