@@ -18,7 +18,8 @@
 
 namespace daw::json {
 	/// Types that use Boost.Describe need to specialize use_boost_describe_v for their type with a
-	/// bool value of true
+	/// bool value of true.  This defaults to on, all described structs, but can be opted-out of if
+	/// one wants to do a custom mapping of a Boost.Described struct
 	template<typename, typename = void>
 	inline constexpr bool use_boost_describe_v = true;
 
