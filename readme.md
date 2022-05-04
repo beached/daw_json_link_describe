@@ -2,7 +2,7 @@ Example of how to use Boost.Describe descriptions as a way to map aggregates
 
 See tests/src folder for a working example
 
-Requires C++17 and uses DAW JSON Link v3
+Requires C++17 and uses [DAW JSON Link](https://github.com/beached/daw_json_link) v3
 
 To describe a struct, only public members are supported, see the Boost.Describe documentation. It will be similar to
 
