@@ -27,6 +27,8 @@ namespace daw::json {
 		template<typename, typename>
 		struct describe_member_impl;
 
+		/// \brief We must use char arrays to store names for NTTP/CNTTP. Building json_link type too
+		/// \tparam T Class member being mapped
 		template<typename T, std::size_t... Is>
 		struct describe_member_impl<T, std::index_sequence<Is...>> {
 			static constexpr char const name[sizeof...( Is )]{ T::name[Is]... };
