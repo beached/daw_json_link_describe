@@ -20,7 +20,7 @@ namespace daw::json {
 	/// Types that use Boost.Describe need to specialize use_boost_describe_v for their type with a
 	/// bool value of true
 	template<typename, typename = void>
-	inline constexpr bool use_boost_describe_v = false;
+	inline constexpr bool use_boost_describe_v = true;
 
 	namespace describe_impl {
 		template<typename, typename>
@@ -36,10 +36,21 @@ namespace daw::json {
 		using describe_member =
 		  describe_member_impl<T,
 		                       std::make_index_sequence<std::char_traits<char>::length( T::name ) + 1>>;
+
+		template<typename T>
+		using detect_boost_public_member_descriptor_fn =
+		  decltype( boost_public_member_descriptor_fn( std::declval<T **>( ) ) );
+
+		template<typename T>
+		inline constexpr bool has_boost_describe_public_members_v =
+		  daw::is_detected_v<detect_boost_public_member_descriptor_fn, T>;
 	} // namespace describe_impl
 
 	template<typename T>
-	struct json_data_contract<T, std::enable_if_t<use_boost_describe_v<T>>> {
+	struct json_data_contract<
+	  T,
+	  std::enable_if_t<describe_impl::has_boost_describe_public_members_v<T> and
+	                   use_boost_describe_v<T>>> {
 	private:
 		using pub_desc_t = boost::describe::describe_members<T, boost::describe::mod_public>;
 		using pri_desc_t = boost::describe::describe_members<T, boost::describe::mod_private>;

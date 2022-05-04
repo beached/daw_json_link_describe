@@ -11,7 +11,5 @@ struct X {
   int m2;
 };
 BOOST_DESCRIBE_STRUCT( X, ( ), ( m1, m2 ) )
-template<>
-inline constexpr bool daw::json::use_boost_describe_v<X> = true;
 ```
 The specialization of `daw::json::use_boost_describe` is necessary. After this from_json and to_json will work with the mapped type

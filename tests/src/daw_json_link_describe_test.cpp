@@ -17,8 +17,6 @@ struct X {
 	int m2;
 };
 BOOST_DESCRIBE_STRUCT( X, ( ), ( m1, m2 ) );
-template<>
-inline constexpr bool daw::json::use_boost_describe_v<X> = true;
 
 int main( ) {
 	constexpr daw::string_view json_doc = R"json(
