@@ -43,25 +43,24 @@ namespace daw::json {
 		  decltype( boost_public_member_descriptor_fn( std::declval<T **>( ) ) );
 
 		template<typename T>
-		inline constexpr bool has_boost_describe_public_members_v =
+		inline constexpr bool has_boost_describe_description_v =
 		  daw::is_detected_v<detect_boost_public_member_descriptor_fn, T>;
 	} // namespace describe_impl
 
 	template<typename T>
-	struct json_data_contract<
-	  T,
-	  std::enable_if_t<describe_impl::has_boost_describe_public_members_v<T> and
-	                   use_boost_describe_v<T>>> {
+	struct json_data_contract<T,
+	                          std::enable_if_t<describe_impl::has_boost_describe_description_v<T> and
+	                                           use_boost_describe_v<T>>> {
 	private:
 		using pub_desc_t = boost::describe::describe_members<T, boost::describe::mod_public>;
 		using pri_desc_t = boost::describe::describe_members<T, boost::describe::mod_private>;
 		using pro_desc_t = boost::describe::describe_members<T, boost::describe::mod_protected>;
 		static_assert(
 		  boost::mp11::mp_empty<pri_desc_t>::value,
-		  "Classes with private member variables are not supported. Do a manual mapping." );
+		  "Classes with private member variables are not supported. Must use a manual mapping." );
 		static_assert(
 		  boost::mp11::mp_empty<pro_desc_t>::value,
-		  "Classes with protected member variables are not supported. Do a manual mapping." );
+		  "Classes with protected member variables are not supported. Must use a manual mapping." );
 
 		template<typename U>
 		using desc_t = typename describe_impl::describe_member<U>::type;
