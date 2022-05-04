@@ -55,13 +55,22 @@ namespace daw::json {
 
 	template<typename T>
 	struct json_data_contract<T, std::enable_if_t<use_boost_describe_v<T>>> {
-		using type = DAW_TYPEOF( describe_impl::get_member_list(
-		  std::declval<boost::describe::describe_members<T, boost::describe::mod_public>>( ) ) );
+	private:
+		using pub_desc_t = boost::describe::describe_members<T, boost::describe::mod_public>;
+		using pri_desc_t = boost::describe::describe_members<T, boost::describe::mod_private>;
+		using pro_desc_t = boost::describe::describe_members<T, boost::describe::mod_protected>;
+		static_assert(
+		  boost::mp11::mp_empty<pri_desc_t>::value,
+		  "Classes with private member variables are not supported. Do a manual mapping." );
+		static_assert(
+		  boost::mp11::mp_empty<pro_desc_t>::value,
+		  "Classes with protected member variables are not supported. Do a manual mapping." );
+
+	public:
+		using type = DAW_TYPEOF( describe_impl::get_member_list( std::declval<pub_desc_t>( ) ) );
 
 		static constexpr auto to_json_data( T const &value ) {
-			return describe_impl::make_member_tuple(
-			  value,
-			  boost::describe::describe_members<T, boost::describe::mod_public>{ } );
+			return describe_impl::make_member_tuple( value, pub_desc_t{ } );
 		}
 	};
 
