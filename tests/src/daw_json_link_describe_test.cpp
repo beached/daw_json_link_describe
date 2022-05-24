@@ -12,6 +12,7 @@
 #include <cassert>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <optional>
 
 struct X {
@@ -34,8 +35,9 @@ BOOST_DESCRIBE_STRUCT( Z, ( ), ( kv ) );
 struct Foo {
 	std::optional<Y> m0;
 	std::vector<X> m1;
+	std::shared_ptr<int> m2;
 };
-BOOST_DESCRIBE_STRUCT( Foo, ( ), ( m0, m1 ) );
+BOOST_DESCRIBE_STRUCT( Foo, ( ), ( m0, m1, m2 ) );
 
 int main( ) {
 	constexpr daw::string_view json_doc0 = R"json(
@@ -94,4 +96,14 @@ int main( ) {
 	assert( val3.m1[1].m1 == 2 );
 	assert( val3.m1[1].m2 == 3 );
 	std::cout << "json: " << daw::json::to_json( val3 ) << '\n';
+	using namespace daw::json::options;
+	auto json_doc3b = daw::json::to_json( val3, output_flags<SerializationFormat::Pretty> );
+	std::cout << "pretty json: " << json_doc3b << '\n';
+	auto val3b = daw::json::from_json<Foo>( json_doc3b );
+	assert( not val3b.m0 );
+	assert( val3b.m1.size( ) == 2 );
+	assert( val3b.m1[0].m1 == 0 );
+	assert( val3b.m1[0].m2 == 1 );
+	assert( val3b.m1[1].m1 == 2 );
+	assert( val3b.m1[1].m2 == 3 );
 }
